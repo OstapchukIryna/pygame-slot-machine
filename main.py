@@ -2,8 +2,7 @@ import sys
 import pygame
 from machine import Machine
 
-
-from settings import WIDTH, HEIGHT, BG_IMAGE_PATH, FPS
+from settings import WIDTH, HEIGHT, BG_IMAGE_PATH, FPS, GAME_WIDTH, GAME_HEIGHT, UI_HEIGHT
 
 
 class Game:
@@ -14,16 +13,17 @@ class Game:
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))  # noqa: F405
         pygame.display.set_caption("Slot Machine Demo")
         self.clock = pygame.time.Clock()
-        self.bg_image = pygame.image.load(BG_IMAGE_PATH)  # noqa: F405
+        self.bg_image = pygame.image.load(BG_IMAGE_PATH).convert()
+        self.bg_image = pygame.transform.smoothscale(
+            self.bg_image, (GAME_WIDTH, GAME_HEIGHT))
 
-        # TODO:Create Machine class
         self.machine = Machine()
         self.delta_time = 0
 
         # Sound
-        main_sound = pygame.mixer.Sound('audio/')
+        # main_sound = pygame.mixer.Sound('audio/audio_track.mp3')
         # if track is done playing just play again
-        main_sound.play(loops=-1)
+        # main_sound.play(loops=-1)
 
     def run(self) -> None:
 
@@ -37,20 +37,19 @@ class Game:
                     sys.exit()
 
             # Time variables
-            # Every time while is True
-            self.start_time = pygame.time.get_ticks()
-            self.delta_time = (pygame.time.get_ticks() -
-                               self.start_time) / 1000
+            self.delta_time = self.clock.tick(FPS) / 1000
 
-            # Update display with every tick
-            pygame.display.update()
             # Draw background
             self.screen.blit(self.bg_image, (0, 0))
+            pygame.draw.rect(self.screen, (20, 20, 20),
+                             (0, GAME_HEIGHT, WIDTH, UI_HEIGHT))
             self.machine.update(self.delta_time)
+            self.machine.draw(self.screen)
+            pygame.display.update()
             self.clock.tick(FPS)
 
 
-if "__name__" == "__main__":
+if __name__ == "__main__":
     game = Game()
     # Continuously run
     game.run()
